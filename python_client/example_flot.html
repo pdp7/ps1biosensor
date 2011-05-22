@@ -91,7 +91,7 @@ $(function () {
     }
 
     // setup control widget
-    var updateInterval = 10000;
+    var updateInterval = 30;
     $("#updateInterval").val(updateInterval).change(function () {
         var v = $(this).val();
         if (v && !isNaN(+v)) {
@@ -113,20 +113,40 @@ $(function () {
 
 var testdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
-    var plot1 = $.plot($("#ECG"), [[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]], options);
+    var plot1 = $.plot($("#ECG"), [ getRandomData() ], options);
     var plot2 = $.plot($("#IRPULSE"), [ getRandomData() ], options);
     var plot3 = $.plot($("#BODYTEMP"), [ getRandomData() ], options);
     var plot4 = $.plot($("#GSR"), [ getRandomData() ], options);
     var plot5 = $.plot($("#CO2"), [ getRandomData() ], options);
 
+
+	function frob() {
+		
+	}
+
+/*
+$.ajax({
+    type: 'GET',
+    url: "/mylongpollurl/",
+    dataType: 'application/json',
+    success: function(json) {
+        // I do stuff here
+    },
+    error: function(xhr, errText, ex) {
+        // If timeout I send a new long-poll request
+    }
+});
+*/
     function update() {
-        plot1.setData( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] );
+
+
+        //plot1.setData( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] );
         plot2.setData([ getRandomData() ]);
         plot3.setData([ getRandomData() ]);
         plot4.setData([ getRandomData() ]);
         plot5.setData([ getRandomData() ]);
         // since the axes don't change, we don't need to call plot.setupGrid()
-        plot1.draw();
+        //plot1.draw();
         plot2.draw();
         plot3.draw();
         plot4.draw();

@@ -3,7 +3,7 @@ import threading
 import serial
 import Queue
 import time
-import simplejson
+import simplejson as json
 
 import tornado.ioloop
 import tornado.web
@@ -87,7 +87,7 @@ class Writer(threading.Thread) :
 		while not self.stopped :
 			try :
 				pkt = self.r.q.get(timeout=0.05)
-				data = self.data[0:self.len-1]
+				data = self.data[1:]
 				data.append(pkt['cnt'])
 				self.data = data
 			except Queue.Empty :
@@ -97,11 +97,27 @@ class Writer(threading.Thread) :
 		return json.dumps(self.data)
 
 class MainHandler(tornado.web.RequestHandler):
+	def get(self):
+		htmlf = open('example_flot.html')
+		html = htmlf.read()
+		htmlf.close()
+		self.write(html)
+
+class FlotHandler(tornado.web.RequestHandler):
+	def get(self, fn) :
+		# TODO file security!
+		fn = 'flot/%s' % fn
+		fh = open(fn, 'r')
+		try :
+			self.write(fh.read())
+		finally :
+			fh.close()
+
+class DataHandler(tornado.web.RequestHandler):
 	def initialize(self, writer):
 		self.writer = writer
 
 	def get(self):
-		#self.write("Hello, world")
 		self.write(self.writer.write())
 
 def sec() :
@@ -114,7 +130,9 @@ if __name__ == "__main__":
 	w.start()
 
 	application = tornado.web.Application([
-		(r"/a", MainHandler, dict(writer=w)),
+		(r"/$", MainHandler),
+		(r'/flot/(.*)', FlotHandler),
+		(r"/a", DataHandler, dict(writer=w)),
 	])
 	application.listen(8888)
 
