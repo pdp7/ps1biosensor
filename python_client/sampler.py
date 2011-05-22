@@ -2,18 +2,9 @@ import struct
 import threading
 import serial
 import Queue
+import time
 
 s = serial.Serial('/dev/ttyACM0', 57600, timeout=1)
-
-def getpkts(ser) :
-	p = ''
-	while (len(p) < 17) :
-		p += ser.read(17 - len(p))
-	cnt, = struct.unpack('B', p[3:4])
-	return {'cnt' : cnt}
-
-#while True :
-#	print getpkt(s)
 
 class Reader(threading.Thread) :
 	def __init__(self, serialport) :
@@ -80,13 +71,22 @@ class Reader(threading.Thread) :
 			else :
 				self.q.put(pkt)
 
+def sec() :
+	return int(time.time())
+
 if __name__ == '__main__' :
 	r = Reader(s)
 	try :
 		r.start()
+		c = 0
+		sc = sec()
 		while True :
+			if sc != sec() :
+				print 'rate = %d/s' % c
+				sc = sec()
+				c = 0
 			p = r.q.get()
-			print p
+			c += 1
 	except KeyboardInterrupt :
 		r.stopped = True
 		r.ser.close()
