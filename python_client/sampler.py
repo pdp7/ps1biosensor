@@ -69,7 +69,7 @@ class Reader(threading.Thread) :
 
 		# hooray! we have a packet! glory be!
 		cnt, = struct.unpack('B', self.buf[3:4])
-		self.buf = self.buf[pkt_size:]
+		self.buf = self.buf[pkt_bytes:]
 		return {'cnt' : cnt}
 
 	def run(self) :
