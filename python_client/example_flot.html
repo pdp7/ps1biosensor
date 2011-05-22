@@ -15,29 +15,29 @@
     <table border="0">
 
     <tr>
-    <td width="300px" height="150px">
+    <td width="380px" height="260px">
     <h3>ECG</h3>
     <div id="ECG" style="width:100%;height:50%;"></div>
     </td>
 
-    <td width="300px" height="150px">
+    <td width="380px" height="260px">
     <h3>IR PULSE</h3>
     <div id="IRPULSE" style="width:100%;height:50%;"></div>
     </td>
 
-    <td width="300px" height="150px">
+    <td width="380px" height="260px">
     <h3>Body Temperature</h3>
     <div id="BODYTEMP" style="width:100%;height:50%;"></div>
     </td>
     </tr>
 
     <tr>
-    <td width="300px" height="150px">
+    <td width="380px" height="260px">
     <h3>Galvanic Skin Response</h3>
     <div id="GSR" style="width:100%;height:50%;"></div>
     </td>
 
-    <td width="300px" height="150px">
+    <td width="380px" height="260px">
     <h3>CO2 Content of Breath</h3>
     <div id="CO2" style="width:100%;height:50%;"></div>
     </td>
@@ -52,21 +52,6 @@
 
 <script type="text/javascript">
 $(function () {
-    // we use an inline data source in the example, usually data would
-    // be fetched from a server
-
-    //var DATAFILE = new XMLHttpRequest();
-    //DATAFILE.open("GET","BioData.html",true);
-    //DATAFILE.onreadystatechange = function(){
-    //    if(DATAFILE.readyState === 4){ //Makes sure the document is ready to parse.
-//            if(DATAFILE.status === 200){ //Makes sure it's found the file.
-//                allText = DATAFILE.responseText;
-//                DataValues = DATAFILE.responseText.split(" "); //Will seperate the text into an array
-//            }
-//        }
-//    }
-//    DATAFILE.send(null);
-
     var data = [], totalPoints = 300;
     function getRandomData() {
         if (data.length > 0)
@@ -107,11 +92,9 @@ $(function () {
     // setup plot
     var options = {
         series: { shadowSize: 0 }, // drawing is faster without shadows
-        yaxis: { min: 0, max: 100 },
+        yaxis: { min: 0, max: 255 },
         xaxis: { show: false }
     };
-
-var testdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 
     var plot1 = $.plot($("#ECG"), [ getRandomData() ], options);
     var plot2 = $.plot($("#IRPULSE"), [ getRandomData() ], options);
@@ -120,9 +103,16 @@ var testdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
     var plot5 = $.plot($("#CO2"), [ getRandomData() ], options);
 
 
-	function frob() {
-		
+	function ajaxdata() {
+		$.getJSON('/a', function(data) {
+			plot1.setData([data]);
+			plot1.draw();
+		});
+
+	        setTimeout(ajaxdata, updateInterval);
 	}
+
+	ajaxdata();
 
 /*
 $.ajax({

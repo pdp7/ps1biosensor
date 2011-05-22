@@ -94,7 +94,7 @@ class Writer(threading.Thread) :
 				pass
 	
 	def write(self) :
-		return json.dumps(self.data)
+		return json.dumps(zip(range(self.len), self.data))
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
