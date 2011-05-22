@@ -2,13 +2,15 @@ import struct
 import threading
 import serial
 import Queue
+import sys
 import time
-import simplejson as json
+try :
+	import simplejson as json
+except ImportError :
+	import json
 
 import tornado.ioloop
 import tornado.web
-
-s = serial.Serial('/dev/ttyACM0', 57600, timeout=1)
 
 class Reader(threading.Thread) :
 	def __init__(self, serialport) :
@@ -124,6 +126,13 @@ def sec() :
 	return int(time.time())
 
 if __name__ == "__main__":
+	port_number = None
+	try :
+		port_number = int(sys.argv[1])
+	except :
+		port_number = sys.argv[1]
+	s = serial.Serial(port_number, 57600, timeout=1)
+
 	r = Reader(s)
 	r.start()
 	w = Writer(r)
