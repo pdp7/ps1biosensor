@@ -98,7 +98,7 @@ class Writer(threading.Thread) :
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
-		htmlf = open('example_flot.html')
+		htmlf = open('interface.html')
 		html = htmlf.read()
 		htmlf.close()
 		self.write(html)
