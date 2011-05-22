@@ -3,6 +3,10 @@ import threading
 import serial
 import Queue
 import time
+import simplejson
+
+import tornado.ioloop
+import tornado.web
 
 s = serial.Serial('/dev/ttyACM0', 57600, timeout=1)
 
@@ -71,22 +75,52 @@ class Reader(threading.Thread) :
 			else :
 				self.q.put(pkt)
 
+class Writer(threading.Thread) :
+	def __init__(self, r) :
+		self.r = r
+		self.stopped = False
+		self.len = 300
+		self.data = [0] * self.len
+		threading.Thread.__init__(self)
+
+	def run(self) :
+		while not self.stopped :
+			try :
+				pkt = self.r.q.get(timeout=0.05)
+				data = self.data[0:self.len-1]
+				data.append(pkt['cnt'])
+				self.data = data
+			except Queue.Empty :
+				pass
+	
+	def write(self) :
+		return json.dumps(self.data)
+
+class MainHandler(tornado.web.RequestHandler):
+	def initialize(self, writer):
+		self.writer = writer
+
+	def get(self):
+		#self.write("Hello, world")
+		self.write(self.writer.write())
+
 def sec() :
 	return int(time.time())
 
-if __name__ == '__main__' :
+if __name__ == "__main__":
 	r = Reader(s)
+	r.start()
+	w = Writer(r)
+	w.start()
+
+	application = tornado.web.Application([
+		(r"/a", MainHandler, dict(writer=w)),
+	])
+	application.listen(8888)
+
 	try :
-		r.start()
-		c = 0
-		sc = sec()
-		while True :
-			if sc != sec() :
-				print 'rate = %d/s' % c
-				sc = sec()
-				c = 0
-			p = r.q.get()
-			c += 1
+		tornado.ioloop.IOLoop.instance().start()
 	except KeyboardInterrupt :
 		r.stopped = True
+		w.stopped = True
 		r.ser.close()
