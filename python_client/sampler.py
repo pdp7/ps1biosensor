@@ -93,7 +93,7 @@ class Writer(threading.Thread) :
 		self.stopped = False
 		self.len = 300
 		self.data = []
-		for i in self.range(5) : #TODO 5 should not be hardcoded
+		for i in range(5) : #TODO 5 should not be hardcoded
 			self.data.append([0] * self.len)
 		threading.Thread.__init__(self)
 
