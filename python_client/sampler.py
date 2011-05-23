@@ -103,7 +103,7 @@ class Writer(threading.Thread) :
 				pkt = self.r.q.get(timeout=0.05)
 				for chan in range(5) :
 					data = self.data[chan][1:]
-					data.append(pkt['chans'])
+					data.append(pkt['chans'][chan])
 					self.data[chan] = data
 			except Queue.Empty :
 				pass
