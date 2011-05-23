@@ -27,8 +27,9 @@ class Reader(threading.Thread) :
 		sz = len(self.buf)
 
 		start_bound = '\xa5\x5a\x02'
-		end_bound = '\x01\x02\x03\x04\x05\x06\x07\x08\x00'
-		mid_bytes = 5
+		#end_bound = '\x01\x02\x03\x04\x05\x06\x07\x08\x00'
+		end_bound = '\x07\x08\x00'
+		mid_bytes = 5 + 6
 
 		pkt_bytes = len(start_bound) + mid_bytes + len(end_bound)
 
@@ -66,8 +67,17 @@ class Reader(threading.Thread) :
 
 		# hooray! we have a packet! glory be!
 		cnt, = struct.unpack('B', self.buf[3:4])
+		chans = []
+		for i in range(5) :
+			fmt = '>H'
+			if i == 0 :
+				fmt = '<H'
+			o = 4 + 2 * i
+			v, = struct.unpack(fmt, self.buf[o:o+2])
+			chans.append(v)
 		self.buf = self.buf[pkt_bytes:]
-		return {'cnt' : cnt}
+		print chans
+		return {'cnt' : cnt, 'chans' : chans}
 
 	def run(self) :
 		while not self.stopped :
