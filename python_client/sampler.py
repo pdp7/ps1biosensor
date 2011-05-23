@@ -92,21 +92,27 @@ class Writer(threading.Thread) :
 		self.r = r
 		self.stopped = False
 		self.len = 300
-		self.data = [0] * self.len
+		self.data = []
+		for i in self.range(5) : #TODO 5 should not be hardcoded
+			self.data.append([0] * self.len)
 		threading.Thread.__init__(self)
 
 	def run(self) :
 		while not self.stopped :
 			try :
 				pkt = self.r.q.get(timeout=0.05)
-				data = self.data[1:]
-				data.append(pkt['cnt'])
-				self.data = data
+				for chan in range(5) :
+					data = self.data[chan][1:]
+					data.append(pkt['chans'])
+					self.data[chan] = data
 			except Queue.Empty :
 				pass
 	
 	def write(self) :
-		return json.dumps(zip(range(self.len), self.data))
+		d = []
+		for dat in self.data :
+			d.append(zip(range(self.len), dat))
+		return json.dumps(d)
 
 class MainHandler(tornado.web.RequestHandler):
 	def get(self):
