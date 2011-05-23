@@ -107,6 +107,14 @@ $(function () {
 		$.getJSON('/a', function(data) {
 			plot1.setData([data[0]]);
 			plot1.draw();
+			plot2.setData([data[1]]);
+			plot2.draw();
+			plot3.setData([data[2]]);
+			plot3.draw();
+			plot4.setData([data[3]]);
+			plot4.draw();
+			plot5.setData([data[4]]);
+			plot5.draw();
 		});
 
 	        setTimeout(ajaxdata, updateInterval);
@@ -127,6 +135,7 @@ $.ajax({
     }
 });
 */
+/*
     function update() {
 
 
@@ -146,6 +155,7 @@ $.ajax({
     }
     
     update();
+*/
 });
 </script>
 
