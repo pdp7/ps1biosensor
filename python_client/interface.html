@@ -1,0 +1,163 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>LifeSigns: Bio Sensor Array Software</title>
+    <link href="layout.css" rel="stylesheet" type="text/css">
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+    <script language="javascript" src="flot/jquery.flot.resize.js"></script>
+
+ </head>
+    <body>
+
+    <table border="0">
+
+    <tr>
+    <td width="380px" height="260px">
+    <h3>ECG</h3>
+    <div id="ECG" style="width:100%;height:50%;"></div>
+    </td>
+
+    <td width="380px" height="260px">
+    <h3>IR PULSE</h3>
+    <div id="IRPULSE" style="width:100%;height:50%;"></div>
+    </td>
+
+    <td width="380px" height="260px">
+    <h3>Body Temperature</h3>
+    <div id="BODYTEMP" style="width:100%;height:50%;"></div>
+    </td>
+    </tr>
+
+    <tr>
+    <td width="380px" height="260px">
+    <h3>Galvanic Skin Response</h3>
+    <div id="GSR" style="width:100%;height:50%;"></div>
+    </td>
+
+    <td width="380px" height="260px">
+    <h3>CO2 Content of Breath</h3>
+    <div id="CO2" style="width:100%;height:50%;"></div>
+    </td>
+    </tr>
+    
+    </table>
+
+    <p>You can update a chart periodically to get a real-time effect
+    by using a timer to insert the new data in the plot and redraw it.</p>
+
+    <p>Time between updates: <input id="updateInterval" type="text" value="" style="text-align: right; width:5em"> milliseconds</p>
+
+<script type="text/javascript">
+$(function () {
+    var data = [], totalPoints = 300;
+    function getRandomData() {
+        if (data.length > 0)
+            data = data.slice(1);
+
+        // do a random walk
+        while (data.length < totalPoints) {
+            var prev = data.length > 0 ? data[data.length - 1] : 50;
+            var y = prev + Math.random() * 10 - 5;
+            if (y < 0)
+                y = 0;
+            if (y > 100)
+                y = 100;
+            data.push(y);
+        }
+
+        // zip the generated y values with the x values
+        var res = [];
+        for (var i = 0; i < data.length; ++i)
+            res.push([i, data[i]])
+        return res;
+    }
+
+    // setup control widget
+    var updateInterval = 30;
+    $("#updateInterval").val(updateInterval).change(function () {
+        var v = $(this).val();
+        if (v && !isNaN(+v)) {
+            updateInterval = +v;
+            if (updateInterval < 1)
+                updateInterval = 1;
+            if (updateInterval > 2000)
+                updateInterval = 2000;
+            $(this).val("" + updateInterval);
+        }
+    });
+
+    // setup plot
+    var options = {
+        series: { shadowSize: 0 }, // drawing is faster without shadows
+        yaxis: { min: 0, max: 1024 },
+        xaxis: { show: false }
+    };
+
+    var plot1 = $.plot($("#ECG"), [ getRandomData() ], options);
+    var plot2 = $.plot($("#IRPULSE"), [ getRandomData() ], options);
+    var plot3 = $.plot($("#GSR"), [ getRandomData() ], options);
+    var plot4 = $.plot($("#CO2"), [ getRandomData() ], options);
+    var plot5 = $.plot($("#BODYTEMP"), [ getRandomData() ], options);
+
+
+	function ajaxdata() {
+		$.getJSON('/a', function(data) {
+			plot1.setData([data[0]]);
+			plot1.draw();
+			plot2.setData([data[1]]);
+			plot2.draw();
+			plot3.setData([data[2]]);
+			plot3.draw();
+			plot4.setData([data[3]]);
+			plot4.draw();
+			plot5.setData([data[4]]);
+			plot5.draw();
+		});
+
+	        setTimeout(ajaxdata, updateInterval);
+	}
+
+	ajaxdata();
+
+/*
+$.ajax({
+    type: 'GET',
+    url: "/mylongpollurl/",
+    dataType: 'application/json',
+    success: function(json) {
+        // I do stuff here
+    },
+    error: function(xhr, errText, ex) {
+        // If timeout I send a new long-poll request
+    }
+});
+*/
+/*
+    function update() {
+
+
+        //plot1.setData( [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13] );
+        plot2.setData([ getRandomData() ]);
+        plot3.setData([ getRandomData() ]);
+        plot4.setData([ getRandomData() ]);
+        plot5.setData([ getRandomData() ]);
+        // since the axes don't change, we don't need to call plot.setupGrid()
+        //plot1.draw();
+        plot2.draw();
+        plot3.draw();
+        plot4.draw();
+        plot5.draw();
+        
+        setTimeout(update, updateInterval);
+    }
+    
+    update();
+*/
+});
+</script>
+
+ </body>
+</html>
