@@ -12,6 +12,8 @@ except ImportError :
 import tornado.ioloop
 import tornado.web
 
+NCHAN = 6
+
 class Reader(threading.Thread) :
 	def __init__(self, serialport) :
 		self.ser = serialport
@@ -27,9 +29,8 @@ class Reader(threading.Thread) :
 		sz = len(self.buf)
 
 		start_bound = '\xa5\x5a\x02'
-		#end_bound = '\x01\x02\x03\x04\x05\x06\x07\x08\x00'
-		end_bound = '\x07\x08\x00'
-		mid_bytes = 5 + 6
+		end_bound = '\x00'
+		mid_bytes = 5 + 6 + 2
 
 		pkt_bytes = len(start_bound) + mid_bytes + len(end_bound)
 
@@ -53,7 +54,7 @@ class Reader(threading.Thread) :
 		if (len(self.buf) < pkt_bytes) :
 			return pkt_bytes - len(self.buf)
 
-		# now we have framed and started the first 3 
+		# now we have framed and started the first 3
 		offset_end = len(start_bound) + mid_bytes
 		if (self.buf[offset_end:offset_end+len(end_bound)] != end_bound) :
 			# well that's pretty broken, re-align
@@ -68,15 +69,15 @@ class Reader(threading.Thread) :
 		# hooray! we have a packet! glory be!
 		cnt, = struct.unpack('B', self.buf[3:4])
 		chans = []
-		for i in range(5) :
+		for i in range(NCHAN) :
 			fmt = '>H'
-			if i == 0 :
-				fmt = '<H'
+			# believe arduino sketch used to have incorrect byte ordering for 1st channel -drew
+			#if i == 0 :
+				#fmt = '<H'
 			o = 4 + 2 * i
 			v, = struct.unpack(fmt, self.buf[o:o+2])
 			chans.append(v)
 		self.buf = self.buf[pkt_bytes:]
-		print chans
 		return {'cnt' : cnt, 'chans' : chans}
 
 	def run(self) :
@@ -93,7 +94,7 @@ class Writer(threading.Thread) :
 		self.stopped = False
 		self.len = 300
 		self.data = []
-		for i in range(5) : #TODO 5 should not be hardcoded
+		for i in range(NCHAN) :
 			self.data.append([0] * self.len)
 		threading.Thread.__init__(self)
 
@@ -101,7 +102,7 @@ class Writer(threading.Thread) :
 		while not self.stopped :
 			try :
 				pkt = self.r.q.get(timeout=0.05)
-				for chan in range(5) :
+				for chan in range(NCHAN) :
 					data = self.data[chan][1:]
 					data.append(pkt['chans'][chan])
 					self.data[chan] = data
